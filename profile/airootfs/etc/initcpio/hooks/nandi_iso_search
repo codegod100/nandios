@@ -23,6 +23,7 @@ run_hook() {
     mnt=/run/nandi/isodev
     mkdir -p "$mnt"
     lsblk -nlpo PATH,TYPE | awk '$2 == "part" || $2 == "disk" { print $1 }' > /tmp/nandi-devs
+    msg "   devices: $(tr '\n' ' ' < /tmp/nandi-devs)"
     while read -r dev; do
         fstype="$(blkid -o value -s TYPE "$dev" 2>/dev/null)"
         case "$fstype" in
@@ -30,10 +31,17 @@ run_hook() {
             ntfs) fstype=ntfs3 ;;
         esac
         modprobe -q "$fstype" 2>/dev/null
-        mount -r -t "$fstype" "$dev" "$mnt" 2>/dev/null || continue
-        find "$mnt" -maxdepth 3 -iname '*.iso' -type f 2>/dev/null > /tmp/nandi-isos
+        if ! mount -r -t "$fstype" "$dev" "$mnt" 2>/tmp/nandi-mount.err; then
+            msg "   $dev ($fstype): cannot mount: $(cat /tmp/nandi-mount.err)"
+            continue
+        fi
+        find "$mnt" -maxdepth 3 -iname '*.iso' -type f > /tmp/nandi-isos 2>/tmp/nandi-find.err \
+            || msg "   $dev: find failed: $(cat /tmp/nandi-find.err)"
+        msg "   $dev ($fstype): $(wc -l < /tmp/nandi-isos) ISO file(s)"
         while IFS= read -r iso; do
-            if [ "$(blkid -p -s UUID -o value "$iso" 2>/dev/null)" = "$uuid" ]; then
+            i="$(blkid -p -s UUID -o value "$iso" 2>&1)"
+            msg "   ${iso#"$mnt"}: UUID ${i:-none}"
+            if [ "$i" = "$uuid" ]; then
                 msg ":: Found ${iso#"$mnt"} on $dev"
                 losetup -r -f "$iso" && udevadm settle
                 return 0
