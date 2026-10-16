@@ -1,10 +1,16 @@
 # Arch Linux build environment for Nandi OS: archiso, Limine, makepkg, QEMU.
 FROM docker.io/library/archlinux:latest
 
-RUN pacman -Syu --noconfirm --needed \
-        archiso limine libisoburn mtools dosfstools squashfs-tools erofs-utils \
-        base-devel git \
-        qemu-base qemu-hw-display-virtio-vga qemu-hw-display-virtio-gpu edk2-ovmf \
+COPY mirrorlist /etc/pacman.d/mirrorlist
+RUN sed -i 's/^#\?ParallelDownloads.*/ParallelDownloads = 3/' /etc/pacman.conf
+
+RUN for attempt in 1 2 3; do \
+        pacman -Syu --noconfirm --needed \
+            archiso limine libisoburn mtools dosfstools squashfs-tools erofs-utils \
+            base-devel git \
+            qemu-base qemu-hw-display-virtio-vga qemu-hw-display-virtio-gpu edk2-ovmf \
+        && break; sleep 10; done \
+    && pacman -Q archiso limine qemu-base >/dev/null \
     && pacman -Scc --noconfirm
 
 # makepkg refuses to run as root.

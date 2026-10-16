@@ -10,7 +10,7 @@ build=/var/tmp/nandi-pkgbuild
 rm -rf "$build"
 mkdir -p "$build/pkgs"
 
-pacman -Sy --noconfirm
+retry pacman -Sy --noconfirm
 
 for dir in "$src"/packages/*/; do
     name=$(basename "$dir")
@@ -19,8 +19,16 @@ for dir in "$src"/packages/*/; do
     chown -R builder: "$build"
     # Packages without makedepends are data-only and may depend on our own
     # packages, which no repo has yet, so skip the dependency check for them.
+    # Install build deps up front with retries, so a flaky mirror doesn't
+    # fail makepkg's own (single-shot) dependency install.
     deps=--syncdeps
-    grep -q '^makedepends=' "$dir/PKGBUILD" || deps=--nodeps
+    if grep -q '^makedepends=' "$dir/PKGBUILD"; then
+        mapfile -t needed < <(cd "$build/$name" && runuser -u builder -- makepkg --printsrcinfo \
+            | awk -F' = ' '/^\tmakedepends = /{print $2}' | sort -u)
+        retry pacman -S --needed --noconfirm --asdeps "${needed[@]}"
+    else
+        deps=--nodeps
+    fi
     (cd "$build/$name" && runuser -u builder -- env PKGDEST="$build/pkgs" NANDI_KDE_REF="${NANDI_KDE_REF:-}" \
         makepkg --noconfirm --cleanbuild "$deps")
 done

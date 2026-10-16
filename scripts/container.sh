@@ -22,6 +22,9 @@ case ${1:-} in
         for var in SOURCE_DATE_EPOCH NANDI_KDE_REF NANDI_TEST_TIMEOUT NANDI_TEST_CASES; do
             [[ -z ${!var:-} ]] || args+=(-e "$var=${!var}")
         done
+        mirrorlist=${NANDI_MIRRORLIST:-}
+        [[ -n $mirrorlist || ! -f /etc/arch-release ]] || mirrorlist=/etc/pacman.d/mirrorlist
+        [[ -z $mirrorlist ]] || args+=(-v "$(realpath "$mirrorlist"):/etc/pacman.d/mirrorlist:ro")
         [[ ! -e /dev/kvm ]] || args+=(--device /dev/kvm)
         [[ ! -t 0 || ! -t 1 ]] || args+=(-it)
         exec "$engine" run "${args[@]}" "$image" "$@"

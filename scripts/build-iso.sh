@@ -40,7 +40,8 @@ version=$(profile_var iso_version)
 name=$(profile_var iso_name)
 
 log "Running mkarchiso"
-mkarchiso -v -w "$work/build" -o "$work/mkarchiso-out" "$profile"
+# A retry resumes where mkarchiso stopped (it skips steps already done).
+retry mkarchiso -v -w "$work/build" -o "$work/mkarchiso-out" "$profile"
 rm -rf "$work/mkarchiso-out"   # mkarchiso's own ISO; we only want its pieces
 
 log "Assembling Limine ISO"
