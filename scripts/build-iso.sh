@@ -43,6 +43,12 @@ pkglist "$releng/packages.x86_64" "$src/profile/packages.x86_64" \
     | grep -vxF -f <(pkglist "$src/profile/packages.remove") > "$profile/packages.x86_64"
 sed "s|@NANDI_REPO@|$repo|" "$src/profile/pacman.conf" > "$profile/pacman.conf"
 
+# Ship the [nandi] repo on the live system so the installer can put the Nandi
+# packages (Flatkit decorations, Loop Eyes, tray, defaults) on the new system.
+mkdir -p "$profile/airootfs/opt/nandi/repo"
+cp -a "$repo"/. "$profile/airootfs/opt/nandi/repo/"
+sed "s|@NANDI_REPO@|/opt/nandi/repo|" "$src/profile/pacman.conf" > "$profile/airootfs/etc/pacman.conf"
+
 profile_var() {
     bash -c 'declare -A file_permissions=(); source "$1"; printf %s "${!2}"' _ "$profile/profiledef.sh" "$1"
 }

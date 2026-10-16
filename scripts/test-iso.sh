@@ -105,6 +105,7 @@ run_case() {
 
     units=$(grep -a NANDI_FAILED_UNITS "$serial" | tail -n1 | tr -d '\r' || true)
     printf '%-10s %-12s %s\n' "$case" "$result" "${units#NANDI_FAILED_UNITS }"
+    grep -a NANDI_CHECKS "$serial" | tail -n1 | tr -d '\r' || true
     echo "$result" > "$results/$case.result"
 }
 

@@ -27,6 +27,7 @@
         }
     },
     "packages": [
+        "nandi-desktop",
         "plasma-meta",
         "plasma-workspace",
         "plasma-desktop",
@@ -50,6 +51,7 @@
     ],
     "custom_commands": [
         "systemctl enable NetworkManager.service plasmalogin.service",
-        "systemctl set-default graphical.target"
+        "systemctl set-default graphical.target",
+        "sed -i '/^\\[nandi\\]$/,/^Server/d' /etc/pacman.conf"
     ]
 }
