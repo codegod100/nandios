@@ -20,12 +20,16 @@
                 "KDE Plasma"
             ],
             "custom_settings": {
-                "KDE Plasma": {}
+                "KDE Plasma": {
+                    "plasma_flavor": "plasma-meta"
+                }
             }
         }
     },
     "packages": [
         "plasma-meta",
+        "plasma-workspace",
+        "plasma-desktop",
         "plasma-login-manager",
         "networkmanager",
         "konsole",
