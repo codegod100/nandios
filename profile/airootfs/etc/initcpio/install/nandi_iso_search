@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# shellcheck disable=SC2034
+
+build() {
+    add_module loop
+    add_module iso9660
+    add_module vfat
+    add_module exfat
+    add_module ntfs3
+    add_module ext4
+    add_binary blkid
+    add_binary losetup
+    add_binary lsblk
+    add_runscript
+}
+
+help() {
+    cat <<HELPEOF
+Finds the Nandi OS ISO when it sits as a file on a partition (Ventoy and other
+multi-ISO USB sticks) and attaches it as a loop device, so the archiso hook can
+find the boot medium by its archisosearchuuid.
+HELPEOF
+}

@@ -1,0 +1,45 @@
+#!/usr/bin/ash
+# shellcheck shell=dash
+# Ventoy-style boot: the bootloader was started from inside an ISO file, so no
+# block device carries the ISO's UUID. Look for that ISO file on every
+# partition and loop-mount it; archiso then finds the loop device by UUID.
+
+_nandi_have_uuid() {
+    [ -n "$(blkid -l -t "UUID=$1" -o device 2>/dev/null)" ]
+}
+
+run_hook() {
+    local uuid mnt dev iso i fstype
+    uuid="$(getarg archisosearchuuid)"
+    [ -n "$uuid" ] || return 0
+
+    # Normal boot (CD, dd'ed stick): the medium shows up on its own.
+    for i in 1 2 3 4 5 6 7 8 9 10; do
+        _nandi_have_uuid "$uuid" && return 0
+        sleep 1
+    done
+
+    msg ":: Looking for the Nandi OS ISO file on all partitions"
+    mnt=/run/nandi/isodev
+    mkdir -p "$mnt"
+    lsblk -nlpo PATH,TYPE | awk '$2 == "part" || $2 == "disk" { print $1 }' > /tmp/nandi-devs
+    while read -r dev; do
+        fstype="$(blkid -o value -s TYPE "$dev" 2>/dev/null)"
+        case "$fstype" in
+            ''|iso9660|swap|crypto_LUKS|LVM2_member|linux_raid_member) continue ;;
+            ntfs) fstype=ntfs3 ;;
+        esac
+        modprobe -q "$fstype" 2>/dev/null
+        mount -r -t "$fstype" "$dev" "$mnt" 2>/dev/null || continue
+        find "$mnt" -maxdepth 3 -iname '*.iso' -type f 2>/dev/null > /tmp/nandi-isos
+        while IFS= read -r iso; do
+            if [ "$(blkid -p -s UUID -o value "$iso" 2>/dev/null)" = "$uuid" ]; then
+                msg ":: Found ${iso#"$mnt"} on $dev"
+                losetup -r -f "$iso" && udevadm settle
+                return 0
+            fi
+        done < /tmp/nandi-isos
+        umount "$mnt"
+    done < /tmp/nandi-devs
+    msg ":: No ISO file with UUID $uuid found"
+}

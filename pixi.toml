@@ -19,5 +19,5 @@ rebuild-iso = { cmd = "bash scripts/container.sh run scripts/build-iso.sh", depe
 test-iso = { cmd = "bash scripts/container.sh run scripts/test-iso.sh", depends-on = ["builder"], description = "Boot-test the ISO headless in QEMU (BIOS/UEFI, CD/USB)" }
 run-iso = { cmd = "bash scripts/run-iso.sh", description = "Boot the ISO in a QEMU window: pixi run run-iso [uefi|bios]" }
 shell = { cmd = "bash scripts/container.sh run bash", depends-on = ["builder"], description = "Shell in the builder container" }
-lint = { cmd = "shellcheck -x scripts/*.sh profile/profiledef.sh profile/airootfs/usr/local/bin/nandi-boot-report", description = "Lint the shell scripts" }
+lint = { cmd = "shellcheck -x scripts/*.sh profile/profiledef.sh profile/airootfs/usr/local/bin/nandi-boot-report profile/airootfs/etc/initcpio/hooks/nandi_iso_search profile/airootfs/etc/initcpio/install/nandi_iso_search", description = "Lint the shell scripts" }
 clean = { cmd = "bash scripts/container.sh run rm -rf /src/out", description = "Remove build outputs" }

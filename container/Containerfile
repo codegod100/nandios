@@ -6,7 +6,7 @@ RUN sed -i 's/^#\?ParallelDownloads.*/ParallelDownloads = 3/' /etc/pacman.conf
 
 RUN for attempt in 1 2 3; do \
         pacman -Syu --noconfirm --needed \
-            archiso limine libisoburn mtools dosfstools squashfs-tools erofs-utils \
+            archiso limine libisoburn mtools dosfstools e2fsprogs squashfs-tools erofs-utils \
             base-devel git \
             qemu-base qemu-hw-display-virtio-vga qemu-hw-display-virtio-gpu edk2-ovmf \
         && break; sleep 10; done \

@@ -3,6 +3,9 @@
 # stick, and waits for the live session to reach a running Plasma desktop.
 # Writes serial logs and screenshots to out/test/.
 #   test-iso.sh [ISO]   (default: newest out/*.iso)
+# The iso-file case mimics Ventoy: the ISO is a file on a USB stick's
+# filesystem and the kernel is started directly, so the initramfs has to find
+# and loop-mount the file itself.
 # NANDI_TEST_CASES limits the cases, e.g. "uefi-cd bios-usb".
 set -euo pipefail
 # shellcheck source=scripts/lib.sh
@@ -25,7 +28,22 @@ fi
 ovmf_code=/usr/share/edk2/x64/OVMF_CODE.4m.fd
 ovmf_vars=/usr/share/edk2/x64/OVMF_VARS.4m.fd
 
-read -ra cases <<<"${NANDI_TEST_CASES:-bios-cd uefi-cd bios-usb uefi-usb}"
+read -ra cases <<<"${NANDI_TEST_CASES:-bios-cd uefi-cd bios-usb uefi-usb iso-file}"
+
+# Ventoy-like stick: an ext4 filesystem holding the ISO as a file, plus the
+# kernel, initramfs and command line taken from the ISO.
+make_iso_file_stick() {
+    local stage=$results/iso-file
+    mkdir -p "$stage/stick/isos"
+    xorriso -osirrox on -indev "$iso" -extract /arch/boot/x86_64 "$stage/boot" \
+        -extract /boot/limine/limine.conf "$stage/limine.conf" >/dev/null 2>&1
+    chmod -R u+rw "$stage/boot"
+    ln "$iso" "$stage/stick/isos/" 2>/dev/null || cp "$iso" "$stage/stick/isos/"
+    truncate -s "$(( $(stat -c %s "$iso") / 1048576 + 512 ))M" "$stage/stick.img"
+    mkfs.ext4 -q -L STICK -d "$stage/stick" "$stage/stick.img"
+    rm -rf "$stage/stick"
+    iso_file_cmdline=$(grep -m1 'cmdline:' "$stage/limine.conf" | sed 's/^ *cmdline: *//')
+}
 port=4440
 failed=0
 
@@ -43,6 +61,13 @@ for case in "${cases[@]}"; do
         *-cd) media=(-cdrom "$iso") ;;
         *-usb) media=(-device qemu-xhci -drive "if=none,id=stick,format=raw,readonly=on,file=$iso"
                       -device usb-storage,drive=stick,bootindex=0) ;;
+        iso-file)
+            make_iso_file_stick
+            media=(-kernel "$results/iso-file/boot/vmlinuz-linux"
+                   -initrd "$results/iso-file/boot/initramfs-linux.img"
+                   -append "$iso_file_cmdline"
+                   -device qemu-xhci -drive "if=none,id=stick,format=raw,readonly=on,file=$results/iso-file/stick.img"
+                   -device usb-storage,drive=stick) ;;
         *) die "unknown test case $case" ;;
     esac
 
@@ -74,7 +99,7 @@ for case in "${cases[@]}"; do
         kill "$qemu" 2>/dev/null || true
     fi
     wait "$qemu" 2>/dev/null || true
-    rm -f "$results/$case.vars.fd"
+    rm -rf "$results/$case.vars.fd" "$results/iso-file"
 
     units=$(grep -a NANDI_FAILED_UNITS "$serial" | tail -n1 | tr -d '\r' || true)
     printf '%-10s %-12s %s\n' "$case" "$result" "${units#NANDI_FAILED_UNITS }" | tee -a "$results/summary.txt"

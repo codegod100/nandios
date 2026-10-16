@@ -24,7 +24,10 @@ pixi run test-iso    # headless QEMU boot test: BIOS/UEFI x CD/USB, results in o
 pixi run run-iso     # try it in a QEMU window (pixi run run-iso bios for BIOS)
 ```
 
-Write it to a USB stick with `sudo dd if=out/nandios-*.iso of=/dev/sdX bs=4M oflag=sync status=progress`.
+Write it to a USB stick with `sudo dd if=out/nandios-*.iso of=/dev/sdX bs=4M oflag=sync status=progress`,
+or copy it onto a [Ventoy](https://www.ventoy.net) stick. Under Ventoy the ISO is only a
+file on the stick, so the `nandi_iso_search` initramfs hook finds that file by
+the ISO's UUID and loop-mounts it.
 
 Other tasks: `pixi run rebuild-iso` (reuse built packages), `pixi run shell`
 (shell in the builder), `pixi run lint`, `pixi run clean`. Set
