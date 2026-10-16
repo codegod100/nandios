@@ -4,7 +4,7 @@ FROM docker.io/library/archlinux:latest
 RUN pacman -Syu --noconfirm --needed \
         archiso limine libisoburn mtools dosfstools squashfs-tools erofs-utils \
         base-devel git \
-        qemu-base edk2-ovmf \
+        qemu-base qemu-hw-display-virtio-vga qemu-hw-display-virtio-gpu edk2-ovmf \
     && pacman -Scc --noconfirm
 
 # makepkg refuses to run as root.

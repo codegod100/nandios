@@ -56,8 +56,10 @@ jobs:
           if-no-files-found: ignore
 
       - name: Upload ISO
+        if: always()
         uses: actions/upload-artifact@v4
         with:
+          if-no-files-found: ignore
           name: nandios-iso
           path: |
             out/*.iso
