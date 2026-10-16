@@ -7,7 +7,7 @@
     },
     "profile_config": {
         "gfx_driver": "All open-source",
-        "greeter": "sddm",
+        "greeter": "plasma-login-manager",
         "profile": {
             "main": "Desktop",
             "details": ["KDE Plasma"],
@@ -18,7 +18,7 @@
     },
     "packages": [
         "plasma-meta",
-        "sddm",
+        "plasma-login-manager",
         "networkmanager",
         "konsole",
         "dolphin",
@@ -37,7 +37,7 @@
         "ttf-hack"
     ],
     "custom_commands": [
-        "systemctl enable NetworkManager.service sddm.service",
+        "systemctl enable NetworkManager.service plasmalogin.service",
         "systemctl set-default graphical.target"
     ]
 }
