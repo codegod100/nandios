@@ -23,7 +23,7 @@ run_hook() {
     mnt=/run/nandi/isodev
     mkdir -p "$mnt"
     lsblk -nlpo PATH,TYPE | awk '$2 == "part" || $2 == "disk" { print $1 }' > /tmp/nandi-devs
-    msg "   devices: $(tr '\n' ' ' < /tmp/nandi-devs)"
+    msg "   devices: $(cat /tmp/nandi-devs)"
     while read -r dev; do
         fstype="$(blkid -o value -s TYPE "$dev" 2>/dev/null)"
         case "$fstype" in
@@ -35,18 +35,17 @@ run_hook() {
             msg "   $dev ($fstype): cannot mount: $(cat /tmp/nandi-mount.err)"
             continue
         fi
-        find "$mnt" -maxdepth 3 -iname '*.iso' -type f > /tmp/nandi-isos 2>/tmp/nandi-find.err \
-            || msg "   $dev: find failed: $(cat /tmp/nandi-find.err)"
-        msg "   $dev ($fstype): $(wc -l < /tmp/nandi-isos) ISO file(s)"
-        while IFS= read -r iso; do
+        # Globs rather than find: the initramfs busybox has no find.
+        for iso in "$mnt"/*.[iI][sS][oO] "$mnt"/*/*.[iI][sS][oO] "$mnt"/*/*/*.[iI][sS][oO]; do
+            [ -f "$iso" ] || continue
             i="$(blkid -p -s UUID -o value "$iso" 2>&1)"
-            msg "   ${iso#"$mnt"}: UUID ${i:-none}"
+            msg "   $dev: ${iso#"$mnt"}: UUID ${i:-none}"
             if [ "$i" = "$uuid" ]; then
                 msg ":: Found ${iso#"$mnt"} on $dev"
                 losetup -r -f "$iso" && udevadm settle
                 return 0
             fi
-        done < /tmp/nandi-isos
+        done
         umount "$mnt"
     done < /tmp/nandi-devs
     msg ":: No ISO file with UUID $uuid found"
