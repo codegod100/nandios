@@ -82,7 +82,8 @@ jobs:
           { echo '### Boot test'; echo '```'; cat out/test/summary.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
           while read -r case result; do
             if [ "$result" = PASS ]; then
-              echo "::notice title=boot-$case::PASS"
+              checks=$(grep -a NANDI_CHECKS "out/test/$case.serial.log" 2>/dev/null | tail -n1 | tr -d '\r' || true)
+              echo "::notice title=boot-$case::PASS ${checks#NANDI_CHECKS }"
             else
               tail -c 3500 "out/test/$case.serial.log" 2>/dev/null | tr -d '\r' | sed 's/%/%25/g' | awk 'BEGIN{ORS="%0A"} {print}' > /tmp/tail || true
               echo "::error title=boot-$case-$result::$(cat /tmp/tail)"
