@@ -30,6 +30,9 @@ Other tasks: `pixi run rebuild-iso` (reuse built packages), `pixi run shell`
 (shell in the builder), `pixi run lint`, `pixi run clean`. Set
 `NANDI_ENGINE=docker` to force docker when podman is also installed, and
 `NANDI_KDE_REF=<commit>` to pin the codegod100/kde commit that gets packaged.
+Rootless podman is run through `sudo` because mkarchiso needs a rootful
+container. Downloads fall back across several mirrors (`container/mirrorlist`);
+on an Arch host your own mirrorlist is used, or set `NANDI_MIRRORLIST=/path`.
 
 GitHub Actions builds and boot-tests the ISO on every push to `main` and
 uploads it as the `nandios-iso` artifact, with serial logs and screenshots of

@@ -28,8 +28,9 @@ find "$profile/airootfs/etc/systemd/system" -lname '*iwd.service' -delete
 find "$profile/airootfs/etc/systemd/system" -lname '*systemd-networkd*' -delete
 
 cat "$src/profile/profiledef.sh" >> "$profile/profiledef.sh"
-cat "$releng/packages.x86_64" "$src/profile/packages.x86_64" \
-    | sed -e 's/#.*//' -e 's/[[:space:]]//g' | awk 'NF && !seen[$0]++' > "$profile/packages.x86_64"
+pkglist() { sed -e 's/#.*//' -e 's/[[:space:]]//g' "$@" | awk 'NF && !seen[$0]++'; }
+pkglist "$releng/packages.x86_64" "$src/profile/packages.x86_64" \
+    | grep -vxF -f <(pkglist "$src/profile/packages.remove") > "$profile/packages.x86_64"
 sed "s|@NANDI_REPO@|$repo|" "$src/profile/pacman.conf" > "$profile/pacman.conf"
 
 profile_var() {
