@@ -1,0 +1,43 @@
+{
+    "audio_config": {
+        "audio": "pipewire"
+    },
+    "network_config": {
+        "type": "nm"
+    },
+    "profile_config": {
+        "gfx_driver": "All open-source",
+        "greeter": "sddm",
+        "profile": {
+            "main": "Desktop",
+            "details": ["KDE Plasma"],
+            "custom_settings": {
+                "KDE Plasma": {}
+            }
+        }
+    },
+    "packages": [
+        "plasma-meta",
+        "sddm",
+        "networkmanager",
+        "konsole",
+        "dolphin",
+        "kate",
+        "ark",
+        "spectacle",
+        "gwenview",
+        "okular",
+        "partitionmanager",
+        "kdeconnect",
+        "xdg-desktop-portal-kde",
+        "xdg-user-dirs",
+        "firefox",
+        "noto-fonts",
+        "noto-fonts-emoji",
+        "ttf-hack"
+    ],
+    "custom_commands": [
+        "systemctl enable NetworkManager.service sddm.service",
+        "systemctl set-default graphical.target"
+    ]
+}

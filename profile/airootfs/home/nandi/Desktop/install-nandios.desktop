@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
 Name=Install Nandi OS
-Comment=Install to disk with archinstall
+Comment=Install Nandi OS (KDE Plasma + NetworkManager) to disk
 Icon=system-software-install
-Exec=konsole -e sudo archinstall
+Exec=konsole -e sudo archinstall --config /etc/nandi/archinstall.json
 Terminal=false
