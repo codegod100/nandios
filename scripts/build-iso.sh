@@ -17,7 +17,7 @@ export SOURCE_DATE_EPOCH=${SOURCE_DATE_EPOCH:-$(date +%s)}
 [[ -f $repo/nandi.db ]] || die "no package repo in $repo; run 'pixi run build-packages' first"
 
 log "Staging profile"
-rm -rf "$work"
+find "$work" -mindepth 1 -delete 2>/dev/null || true   # may be a mount point
 mkdir -p "$work" "$out"
 cp -a "$releng" "$profile"
 cp -a "$src/profile/airootfs/." "$profile/airootfs/"
@@ -34,6 +34,10 @@ sed -i -E '/^HOOKS=/ s/([( ])archiso([ )])/\1nandi_iso_search archiso\2/' "${con
 grep -q nandi_iso_search "${confs[@]}" || die "could not add nandi_iso_search to HOOKS"
 
 cat "$src/profile/profiledef.sh" >> "$profile/profiledef.sh"
+# NANDI_SQUASHFS=xz trades a much slower build for a ~10% smaller ISO.
+if [[ ${NANDI_SQUASHFS:-zstd} == xz ]]; then
+    echo "airootfs_image_tool_options=('-comp' 'xz' '-Xbcj' 'x86' '-b' '1M' '-Xdict-size' '1M')" >> "$profile/profiledef.sh"
+fi
 pkglist() { sed -e 's/#.*//' -e 's/[[:space:]]//g' "$@" | awk 'NF && !seen[$0]++'; }
 pkglist "$releng/packages.x86_64" "$src/profile/packages.x86_64" \
     | grep -vxF -f <(pkglist "$src/profile/packages.remove") > "$profile/packages.x86_64"
@@ -103,6 +107,6 @@ if loop=$(losetup --find --show --read-only --partscan "$iso" 2>/dev/null); then
 fi
 
 (cd "$out" && sha256sum "${iso##*/}" > "${iso##*/}.sha256")
-rm -rf "$work"
+find "$work" -mindepth 1 -delete
 give_back "$out"
 log "Built $iso ($(du -h "$iso" | cut -f1))"

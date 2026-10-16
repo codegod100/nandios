@@ -14,6 +14,8 @@ install_dir="arch"
 buildmodes=('iso')
 arch="x86_64"
 pacman_conf="pacman.conf"
+# zstd builds the root image several times faster than releng's xz.
+airootfs_image_tool_options=('-comp' 'zstd' '-Xcompression-level' '15' '-b' '1M')
 file_permissions+=(
   ["/etc/sudoers.d"]="0:0:750"
   ["/etc/sudoers.d/10-nandi-live"]="0:0:440"

@@ -28,12 +28,22 @@ case ${1:-} in
         shift
         args=(--rm --privileged -v "$root:/src" -w /src
               -e "NANDI_UID=$(id -u)" -e "NANDI_GID=$(id -g)")
-        for var in SOURCE_DATE_EPOCH NANDI_KDE_REF NANDI_TEST_TIMEOUT NANDI_TEST_CASES; do
+        for var in SOURCE_DATE_EPOCH NANDI_KDE_REF NANDI_TEST_TIMEOUT NANDI_TEST_CASES NANDI_TEST_JOBS NANDI_TEST_MEM NANDI_SQUASHFS; do
             [[ -z ${!var:-} ]] || args+=(-e "$var=${!var}")
         done
         mirrorlist=${NANDI_MIRRORLIST:-}
         [[ -n $mirrorlist || ! -f /etc/arch-release ]] || mirrorlist=/etc/pacman.d/mirrorlist
         [[ -z $mirrorlist ]] || args+=(-v "$(realpath "$mirrorlist"):/etc/pacman.d/mirrorlist:ro")
+        # Keep downloaded packages between runs (NANDI_PKG_CACHE, default .cache/pkg).
+        pkg_cache=${NANDI_PKG_CACHE:-$root/.cache/pkg}
+        mkdir -p "$pkg_cache"
+        args+=(-v "$(realpath "$pkg_cache"):/var/cache/pacman/pkg")
+        # NANDI_WORK_DIR puts mkarchiso's scratch space (~15 GB) on a host
+        # directory instead of the container's own storage.
+        if [[ -n ${NANDI_WORK_DIR:-} ]]; then
+            mkdir -p "$NANDI_WORK_DIR"
+            args+=(-v "$(realpath "$NANDI_WORK_DIR"):/var/tmp/nandi-work")
+        fi
         [[ ! -e /dev/kvm ]] || args+=(--device /dev/kvm)
         [[ ! -t 0 || ! -t 1 ]] || args+=(-it)
         exec "${engine[@]}" run "${args[@]}" "$image" "$@"

@@ -6,7 +6,8 @@
 # The iso-file case mimics Ventoy: the ISO is a file on a USB stick's
 # filesystem and the kernel is started directly, so the initramfs has to find
 # and loop-mount the file itself.
-# NANDI_TEST_CASES limits the cases, e.g. "uefi-cd bios-usb".
+# NANDI_TEST_CASES limits the cases, e.g. "uefi-cd bios-usb"; NANDI_TEST_JOBS
+# sets how many boot at once (default 3), NANDI_TEST_MEM the RAM per VM in MiB.
 set -euo pipefail
 # shellcheck source=scripts/lib.sh
 source "$(dirname -- "${BASH_SOURCE[0]}")/lib.sh"
@@ -44,13 +45,11 @@ make_iso_file_stick() {
     rm -rf "$stage/stick"
     iso_file_cmdline=$(grep -m1 'cmdline:' "$stage/limine.conf" | sed 's/^ *cmdline: *//')
 }
-port=4440
-failed=0
-
-for case in "${cases[@]}"; do
-    port=$((port + 1))
-    serial=$results/$case.serial.log
-    fw=() media=()
+# Boots one case and records PASS/FAIL in $results/<case>.result.
+run_case() {
+    local case=$1 port=$2
+    local serial=$results/$case.serial.log result qemu t units
+    local fw=() media=()
     case $case in
         uefi-*)
             cp "$ovmf_vars" "$results/$case.vars.fd"
@@ -68,11 +67,11 @@ for case in "${cases[@]}"; do
                    -append "$iso_file_cmdline"
                    -device qemu-xhci -drive "if=none,id=stick,format=raw,readonly=on,file=$results/iso-file/stick.img"
                    -device usb-storage,drive=stick) ;;
-        *) die "unknown test case $case" ;;
+        *) echo "unknown test case $case" >&2; echo FAIL > "$results/$case.result"; return ;;
     esac
 
     log "Booting $case (timeout ${timeout}s)"
-    qemu-system-x86_64 "${accel[@]}" -machine q35 -m 4096 -smp 4 \
+    qemu-system-x86_64 "${accel[@]}" -machine q35 -m "$mem" -smp 2 \
         -vga virtio -display none \
         -serial "file:$serial" -monitor "tcp:127.0.0.1:$port,server,nowait" \
         -nic user,model=virtio-net-pci "${fw[@]}" "${media[@]}" &
@@ -99,12 +98,34 @@ for case in "${cases[@]}"; do
         kill "$qemu" 2>/dev/null || true
     fi
     wait "$qemu" 2>/dev/null || true
-    rm -rf "$results/$case.vars.fd" "$results/iso-file"
+    rm -rf "$results/$case.vars.fd"
+    [[ $case != iso-file ]] || rm -rf "$results/iso-file"
 
     units=$(grep -a NANDI_FAILED_UNITS "$serial" | tail -n1 | tr -d '\r' || true)
-    printf '%-10s %-12s %s\n' "$case" "$result" "${units#NANDI_FAILED_UNITS }" | tee -a "$results/summary.txt"
-    [[ $result == PASS ]] || failed=1
+    printf '%-10s %-12s %s\n' "$case" "$result" "${units#NANDI_FAILED_UNITS }"
+    echo "$result" > "$results/$case.result"
+}
+
+# Boot several cases at once; each VM gets 2 CPUs.
+max_jobs=${NANDI_TEST_JOBS:-3}
+mem=${NANDI_TEST_MEM:-3072}
+port=4440
+for case in "${cases[@]}"; do
+    while (( $(jobs -rp | wc -l) >= max_jobs )); do wait -n || true; done
+    port=$((port + 1))
+    run_case "$case" "$port" &
 done
+wait
+
+failed=0
+for case in "${cases[@]}"; do
+    result=$(cat "$results/$case.result" 2>/dev/null || echo MISSING)
+    printf '%-10s %s\n' "$case" "$result" >> "$results/summary.txt"
+    [[ $result == PASS ]] || failed=1
+    rm -f "$results/$case.result"
+done
+log "Summary"
+cat "$results/summary.txt"
 
 give_back "$results"
 exit "$failed"

@@ -29,6 +29,10 @@ or copy it onto a [Ventoy](https://www.ventoy.net) stick. Under Ventoy the ISO i
 file on the stick, so the `nandi_iso_search` initramfs hook finds that file by
 the ISO's UUID and loop-mounts it.
 
+Downloaded packages are kept in `.cache/pkg` (or `NANDI_PKG_CACHE`), so rebuilds
+only fetch what changed. The root image is zstd-compressed for speed; set
+`NANDI_SQUASHFS=xz` for a smaller ISO.
+
 Other tasks: `pixi run rebuild-iso` (reuse built packages), `pixi run shell`
 (shell in the builder), `pixi run lint`, `pixi run clean`. Set
 `NANDI_ENGINE=docker` to force docker when podman is also installed, and
