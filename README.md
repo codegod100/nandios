@@ -11,8 +11,8 @@ It ships the KDE projects from [codegod100/kde](https://github.com/codegod100/kd
 The live session logs in to Plasma automatically as `nandi` (no password,
 passwordless sudo). To install to disk, run **Install Nandi OS** on the desktop
 (`sudo archinstall --config /etc/nandi/archinstall.json`). The config preselects
-the KDE Plasma profile with Plasma Login Manager, NetworkManager and PipeWire; you still pick the
-disk, user and bootloader (choose Limine). The installed system is plain Arch
+Limine, the KDE Plasma profile with Plasma Login Manager, NetworkManager and
+PipeWire; you still pick the disk and user. The installed system is plain Arch
 with Plasma; the Nandi packages are only on the live ISO for now.
 
 ## Build
