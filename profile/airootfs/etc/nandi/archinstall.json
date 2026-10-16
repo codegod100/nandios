@@ -1,4 +1,10 @@
 {
+    "bootloader_config": {
+        "bootloader": "Limine",
+        "uki": false,
+        "removable": true
+    },
+    "bootloader": "Limine",
     "audio_config": {
         "audio": "pipewire"
     },
@@ -10,7 +16,9 @@
         "greeter": "plasma-login-manager",
         "profile": {
             "main": "Desktop",
-            "details": ["KDE Plasma"],
+            "details": [
+                "KDE Plasma"
+            ],
             "custom_settings": {
                 "KDE Plasma": {}
             }
