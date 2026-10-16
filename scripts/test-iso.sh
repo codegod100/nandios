@@ -43,7 +43,9 @@ make_iso_file_stick() {
     truncate -s "$(( $(stat -c %s "$iso") / 1048576 + 512 ))M" "$stage/stick.img"
     mkfs.ext4 -q -L STICK -d "$stage/stick" "$stage/stick.img"
     rm -rf "$stage/stick"
-    iso_file_cmdline=$(grep -m1 'cmdline:' "$stage/limine.conf" | sed 's/^ *cmdline: *//')
+    # Serial last, so the initramfs and systemd messages land in the log.
+    iso_file_cmdline=$(grep -m1 'cmdline:' "$stage/limine.conf" \
+        | sed -e 's/^ *cmdline: *//' -e 's/console=ttyS0,115200 console=tty0/console=tty0 console=ttyS0,115200/')
 }
 # Boots one case and records PASS/FAIL in $results/<case>.result.
 run_case() {

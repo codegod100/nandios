@@ -62,9 +62,8 @@ mv "$work/build/iso/arch" "$isoroot/arch"
 [[ -f $isoroot/arch/boot/x86_64/vmlinuz-linux ]] || die "kernel missing from mkarchiso output"
 
 # Like mkarchiso: the ISO's UUID is its modification date, and a marker file
-# carries the same UUID. The initramfs finds the boot medium by that UUID, or
-# else by scanning every partition for the file, which also works when a USB
-# tool copied the files instead of writing the image.
+# carries the same UUID. The initramfs finds the boot medium by that UUID; the
+# nandi_iso_search hook covers the ISO being a file on a stick (Ventoy).
 uuid=$(TZ=UTC date --date="@$SOURCE_DATE_EPOCH" +%F-%H-%M-%S-00)
 mkdir -p "$isoroot/boot"
 touch "$isoroot/boot/$uuid.uuid"
@@ -90,21 +89,13 @@ xorriso -as mkisofs \
     -volid "$label" -appid "Nandi OS Live" -publisher "Nandi OS" \
     -b boot/limine/limine-bios-cd.bin -no-emul-boot -boot-load-size 4 -boot-info-table \
     --efi-boot boot/limine/limine-uefi-cd.bin -efi-boot-part --efi-boot-image \
-    --protective-msdos-label -partition_offset 16 \
+    --protective-msdos-label \
     --modification-date="$(TZ=UTC date --date="@$SOURCE_DATE_EPOCH" +%Y%m%d%H%M%S00)" \
     -o "$iso" "$isoroot"
 limine bios-install "$iso"
 
-# The initramfs looks the boot medium up by UUID (whole image or partition 1).
+# The initramfs looks the boot medium up by this UUID.
 [[ $(blkid -p -o value -s UUID "$iso") == "$uuid" ]] || die "ISO UUID is not $uuid"
-# Partition 1 should carry it too (the fallback scan only looks at partitions).
-# Informational: containers often lack the loop partition device nodes.
-if loop=$(losetup --find --show --read-only --partscan "$iso" 2>/dev/null); then
-    sleep 1
-    lsblk -o NAME,SIZE,TYPE,FSTYPE,LABEL,UUID "$loop" || true
-    [[ ! -b ${loop}p1 ]] || log "partition 1 UUID: $(blkid -p -o value -s UUID "${loop}p1" || true)"
-    losetup -d "$loop"
-fi
 
 (cd "$out" && sha256sum "${iso##*/}" > "${iso##*/}.sha256")
 find "$work" -mindepth 1 -delete
