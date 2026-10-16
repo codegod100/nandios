@@ -1,0 +1,10 @@
+[Unit]
+Description=Report live boot health on the serial port
+After=display-manager.service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/nandi-boot-report
+
+[Install]
+WantedBy=graphical.target

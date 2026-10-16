@@ -1,0 +1,25 @@
+# Maintainer: codegod100
+# Nandi OS desktop defaults: panel layout, window decoration, KWin scripts.
+
+pkgname=nandi-desktop
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Nandi OS Plasma defaults (layout, Flatkit decorations, Loop Eyes)"
+arch=(any)
+url="https://github.com/codegod100/nandios"
+license=(MIT)
+depends=(plasma-workspace nandi-flatkit-aurorae nandi-loop-eyes nandi-whitelist-tray)
+backup=(etc/xdg/kdeglobals etc/xdg/kwinrc)
+source=(kdeglobals kwinrc
+        lookandfeel-metadata.json
+        org.kde.plasma.desktop-layout.js)
+sha256sums=(SKIP SKIP SKIP SKIP)
+
+package() {
+  install -Dm644 kdeglobals "$pkgdir/etc/xdg/kdeglobals"
+  install -Dm644 kwinrc "$pkgdir/etc/xdg/kwinrc"
+
+  local lnf="$pkgdir/usr/share/plasma/look-and-feel/org.nandi.desktop"
+  install -Dm644 lookandfeel-metadata.json "$lnf/metadata.json"
+  install -Dm644 org.kde.plasma.desktop-layout.js "$lnf/contents/layouts/org.kde.plasma.desktop-layout.js"
+}

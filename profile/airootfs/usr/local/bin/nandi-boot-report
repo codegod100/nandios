@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Prints boot markers on the first serial port. `pixi run test-iso` waits for
+# them; on real hardware without a serial port this is a no-op.
+[[ -w /dev/ttyS0 ]] || exit 0
+say() { timeout 5 sh -c 'printf "%s\n" "$1" > /dev/ttyS0' _ "$1" || true; }
+
+say "NANDI_BOOT_OK kernel=$(uname -r)"
+for _ in $(seq 240); do
+    if pgrep -u nandi -x plasmashell >/dev/null; then
+        sleep 5
+        failed=$(systemctl --failed --plain --no-legend | awk '{print $1}' | tr '\n' ' ')
+        say "NANDI_FAILED_UNITS ${failed:-none}"
+        say "NANDI_PLASMA_OK"
+        exit 0
+    fi
+    sleep 1
+done
+say "NANDI_PLASMA_TIMEOUT"

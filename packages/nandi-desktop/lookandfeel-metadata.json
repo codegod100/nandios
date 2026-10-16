@@ -1,0 +1,12 @@
+{
+    "KPackageStructure": "Plasma/LookAndFeel",
+    "KPlugin": {
+        "Authors": [{ "Name": "Nandi OS" }],
+        "Description": "Nandi OS desktop: Breeze with Flatkit decorations, Loop Eyes and the whitelist tray",
+        "Id": "org.nandi.desktop",
+        "License": "MIT",
+        "Name": "Nandi",
+        "Version": "0.1.0",
+        "Website": "https://github.com/codegod100/nandios"
+    }
+}

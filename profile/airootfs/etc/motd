@@ -1,0 +1,4 @@
+Welcome to Nandi OS (live).
+
+The desktop user is "nandi" (no password, passwordless sudo).
+To install to disk run:  sudo archinstall   (pick Limine as the bootloader)

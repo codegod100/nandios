@@ -1,0 +1,23 @@
+[workspace]
+name = "nandios"
+version = "0.1.0"
+description = "Nandi OS: an Arch Linux based KDE Plasma distro booted by Limine"
+authors = ["codegod100"]
+channels = ["conda-forge"]
+platforms = ["linux-64"]
+
+# The build itself runs in an Arch Linux container (container/Containerfile),
+# so the host only needs podman or docker. Pixi pins the host-side tools.
+[dependencies]
+shellcheck = ">=0.10"
+
+[tasks]
+builder = { cmd = "bash scripts/container.sh build-image", description = "Build the Arch Linux builder container" }
+build-packages = { cmd = "bash scripts/container.sh run scripts/build-packages.sh", depends-on = ["builder"], description = "Build packages/ into the local [nandi] repo (out/repo)" }
+build-iso = { cmd = "bash scripts/container.sh run scripts/build-iso.sh", depends-on = ["build-packages"], description = "Build the live ISO into out/" }
+rebuild-iso = { cmd = "bash scripts/container.sh run scripts/build-iso.sh", depends-on = ["builder"], description = "Rebuild the ISO reusing the packages already in out/repo" }
+test-iso = { cmd = "bash scripts/container.sh run scripts/test-iso.sh", depends-on = ["builder"], description = "Boot-test the ISO headless in QEMU (BIOS/UEFI, CD/USB)" }
+run-iso = { cmd = "bash scripts/run-iso.sh", description = "Boot the ISO in a QEMU window: pixi run run-iso [uefi|bios]" }
+shell = { cmd = "bash scripts/container.sh run bash", depends-on = ["builder"], description = "Shell in the builder container" }
+lint = { cmd = "shellcheck -x scripts/*.sh profile/profiledef.sh profile/airootfs/usr/local/bin/nandi-boot-report", description = "Lint the shell scripts" }
+clean = { cmd = "bash scripts/container.sh run rm -rf /src/out", description = "Remove build outputs" }

@@ -1,0 +1,5 @@
+# SC2012: ls -t is the simplest way to pick the newest ISO.
+# SC2016: single quotes are intentional for sh -c / bash -c scripts.
+# SC2034: lib.sh sets variables for the scripts that source it.
+# SC2054: commas inside QEMU arguments are not array separators.
+disable=SC2012,SC2016,SC2034,SC2054

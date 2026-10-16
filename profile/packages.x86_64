@@ -1,0 +1,49 @@
+# Added on top of archiso's releng package list (see scripts/build-iso.sh).
+
+# Nandi OS packages, built from packages/ into the local [nandi] repo
+nandi-desktop
+nandi-flatkit-aurorae
+nandi-loop-eyes
+nandi-whitelist-tray
+
+# KDE Plasma
+plasma-meta
+sddm
+konsole
+dolphin
+kate
+ark
+spectacle
+gwenview
+okular
+partitionmanager
+kdeconnect
+xdg-desktop-portal-kde
+xdg-user-dirs
+firefox
+
+# Audio
+pipewire
+pipewire-alsa
+pipewire-jack
+pipewire-pulse
+wireplumber
+
+# Graphics and VM guests
+mesa
+vulkan-intel
+vulkan-radeon
+spice-vdagent
+
+# Network
+networkmanager
+
+# Fonts
+noto-fonts
+noto-fonts-emoji
+ttf-hack
+
+# Boot and install
+limine
+efibootmgr
+sudo

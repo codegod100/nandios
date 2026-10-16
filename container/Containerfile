@@ -1,0 +1,14 @@
+# Arch Linux build environment for Nandi OS: archiso, Limine, makepkg, QEMU.
+FROM docker.io/library/archlinux:latest
+
+RUN pacman -Syu --noconfirm --needed \
+        archiso limine libisoburn mtools dosfstools squashfs-tools erofs-utils \
+        base-devel git \
+        qemu-base edk2-ovmf \
+    && pacman -Scc --noconfirm
+
+# makepkg refuses to run as root.
+RUN useradd --create-home builder \
+    && echo 'builder ALL=(ALL:ALL) NOPASSWD: ALL' > /etc/sudoers.d/builder
+
+WORKDIR /src

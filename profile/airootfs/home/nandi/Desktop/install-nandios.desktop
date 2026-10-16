@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Install Nandi OS
+Comment=Install to disk with archinstall
+Icon=system-software-install
+Exec=konsole -e sudo archinstall
+Terminal=false
