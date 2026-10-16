@@ -53,7 +53,7 @@ jobs:
 
       - name: Restore packages
         id: pkgcache
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: out/repo
           key: ${{ steps.pkgkey.outputs.key }}
@@ -62,11 +62,32 @@ jobs:
         if: steps.pkgcache.outputs.cache-hit != 'true'
         run: pixi run --locked build-packages
 
+      - name: Save packages
+        if: steps.pkgcache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: out/repo
+          key: ${{ steps.pkgkey.outputs.key }}
+
       - name: Build ISO
         run: pixi run --locked rebuild-iso
 
       - name: Boot test (QEMU)
         run: pixi run --locked test-iso
+
+      - name: Report boot test
+        if: always()
+        run: |
+          [ -f out/test/summary.txt ] || exit 0
+          { echo '### Boot test'; echo '```'; cat out/test/summary.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          while read -r case result; do
+            if [ "$result" = PASS ]; then
+              echo "::notice title=boot-$case::PASS"
+            else
+              tail -c 3500 "out/test/$case.serial.log" 2>/dev/null | tr -d '\r' | sed 's/%/%25/g' | awk 'BEGIN{ORS="%0A"} {print}' > /tmp/tail || true
+              echo "::error title=boot-$case-$result::$(cat /tmp/tail)"
+            fi
+          done < out/test/summary.txt
 
       - name: Upload boot test results
         if: always()
