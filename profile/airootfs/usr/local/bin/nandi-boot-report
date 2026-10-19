@@ -12,7 +12,9 @@ for _ in $(seq 240); do
         say "NANDI_FAILED_UNITS ${failed:-none}"
         deco=$(runuser -u nandi -- kreadconfig6 --file kwinrc --group org.kde.kdecoration2 --key theme 2>/dev/null)
         repo=$(grep -qx '\[nandi\]' /etc/pacman.conf && find /opt/nandi/repo -name '*.pkg.tar.*' -printf '%f ')
-        say "NANDI_CHECKS decoration=${deco:-unset} installer_repo=${repo:-missing}"
+        runner=missing
+        [[ -f /usr/lib/qt6/plugins/kf6/krunner/krunner_prefixdev.so ]] && runner=installed
+        say "NANDI_CHECKS decoration=${deco:-unset} prefixdev_runner=$runner installer_repo=${repo:-missing}"
         say "NANDI_PLASMA_OK"
         exit 0
     fi

@@ -6,6 +6,7 @@ It ships the KDE projects from [codegod100/kde](https://github.com/codegod100/kd
 
 - **Loop Eyes**: the panel head whose eyes follow the cursor (its KWin script is enabled by default)
 - **Whitelist System Tray**: replaces the stock tray in the default panel
+- **prefix.dev search**: type `pixi <name>` in KRunner or Kickoff to search conda packages on prefix.dev
 - **Flatkit** window decorations: the default KWin decoration
 
 The live session logs in to Plasma automatically as `nandi` (no password,
@@ -52,7 +53,7 @@ each boot in `boot-test`.
 | Path | What |
 | --- | --- |
 | `container/Containerfile` | Arch builder image: archiso, limine, makepkg, QEMU + OVMF |
-| `packages/nandi-kde` | Split PKGBUILD for Loop Eyes, the whitelist tray and Flatkit, built from codegod100/kde |
+| `packages/nandi-kde` | Split PKGBUILD for Loop Eyes, the whitelist tray, Flatkit and the prefix.dev runner, built from codegod100/kde |
 | `packages/nandi-desktop` | Plasma defaults: the `org.nandi.desktop` look-and-feel with the panel layout, `/etc/xdg` kwinrc/kdeglobals |
 | `profile/` | Changes on top of archiso's `releng` profile: extra packages, live user, SDDM autologin, NetworkManager |
 | `profile/limine/limine.conf` | Boot menu (normal, safe graphics, copy to RAM) |

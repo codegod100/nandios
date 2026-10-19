@@ -2,7 +2,7 @@
 # Split package for the KDE projects in https://github.com/codegod100/kde
 
 pkgbase=nandi-kde
-pkgname=(nandi-flatkit-aurorae nandi-loop-eyes nandi-whitelist-tray)
+pkgname=(nandi-flatkit-aurorae nandi-loop-eyes nandi-whitelist-tray nandi-prefixdev-runner)
 pkgver=r0
 pkgrel=1
 arch=(x86_64)
@@ -13,6 +13,7 @@ makedepends=(
   qt6-base qt6-declarative
   libplasma kstatusnotifieritem kio kxmlgui kitemmodels kiconthemes
   ki18n kconfig kservice kwindowsystem kjobwidgets
+  krunner kcoreaddons
 )
 # NANDI_KDE_REF pins a commit of the kde repo (default: latest main).
 _kde_ref=${NANDI_KDE_REF:-}
@@ -33,6 +34,17 @@ build() {
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DBUILD_TESTING=OFF
   cmake --build build-tray
+
+  cmake -S kde/prefix-runner -B build-prefix-runner -G Ninja \
+    -DCMAKE_BUILD_TYPE=None \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DBUILD_TESTING=ON
+  cmake --build build-prefix-runner
+}
+
+check() {
+  # The online test searches prefix.dev; package builds may have no network.
+  QT_QPA_PLATFORM=offscreen ctest --test-dir build-prefix-runner --output-on-failure -LE online
 }
 
 package_nandi-flatkit-aurorae() {
@@ -71,4 +83,13 @@ package_nandi-whitelist-tray() {
   )
 
   DESTDIR="$pkgdir" cmake --install build-tray
+}
+
+package_nandi-prefixdev-runner() {
+  pkgdesc="KRunner plugin: search conda packages on prefix.dev (type \"pixi <name>\")"
+  license=(MIT)
+  depends=(qt6-base krunner ki18n kcoreaddons)
+
+  DESTDIR="$pkgdir" cmake --install build-prefix-runner
+  install -Dm644 kde/prefix-runner/LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 }

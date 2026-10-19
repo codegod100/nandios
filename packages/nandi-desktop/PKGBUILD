@@ -3,12 +3,13 @@
 
 pkgname=nandi-desktop
 pkgver=0.1.0
-pkgrel=2
+pkgrel=3
 pkgdesc="Nandi OS Plasma defaults (layout, Flatkit decorations, Loop Eyes)"
 arch=(any)
 url="https://github.com/codegod100/nandios"
 license=(MIT)
-depends=(plasma-workspace nandi-flatkit-aurorae nandi-loop-eyes nandi-whitelist-tray)
+depends=(plasma-workspace nandi-flatkit-aurorae nandi-loop-eyes nandi-whitelist-tray
+         nandi-prefixdev-runner)
 backup=(etc/xdg/kdeglobals etc/xdg/kwinrc)
 source=(kdeglobals kwinrc
         lookandfeel-metadata.json
