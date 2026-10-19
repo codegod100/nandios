@@ -1,0 +1,7 @@
+# KWallet hands its storage to oo7-daemon: with ksecretd disabled, kwalletd6
+# forwards the KWallet API to whatever owns org.freedesktop.secrets.
+[KSecretD]
+Enabled=false
+
+[org.freedesktop.secrets]
+apiEnabled=false

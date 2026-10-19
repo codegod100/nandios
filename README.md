@@ -8,6 +8,9 @@ It ships the KDE projects from [codegod100/kde](https://github.com/codegod100/kd
 - **Whitelist System Tray**: replaces the stock tray in the default panel
 - **prefix.dev search**: type `pixi <name>` in KRunner or Kickoff to search conda packages on prefix.dev
 - **Flatkit** window decorations: the default KWin decoration
+- **oo7** as the secret store: [oo7-daemon](https://github.com/linux-credentials/oo7)
+  owns `org.freedesktop.secrets` and oo7-portal serves the Secret portal. KWallet's
+  ksecretd is turned off, so apps using the KWallet API go through oo7 too.
 
 The live session logs in to Plasma automatically as `nandi` (no password,
 passwordless sudo). To install to disk, run **Install Nandi OS** on the desktop
@@ -54,6 +57,7 @@ each boot in `boot-test`.
 | --- | --- |
 | `container/Containerfile` | Arch builder image: archiso, limine, makepkg, QEMU + OVMF |
 | `packages/nandi-kde` | Split PKGBUILD for Loop Eyes, the whitelist tray, Flatkit and the prefix.dev runner, built from codegod100/kde |
+| `packages/nandi-oo7` | oo7-daemon, `pam_oo7.so` and oo7-portal, plus the `/etc/xdg/kwalletrc` and portal config that make them the secret store |
 | `packages/nandi-desktop` | Plasma defaults: the `org.nandi.desktop` look-and-feel with the panel layout, `/etc/xdg` kwinrc/kdeglobals |
 | `profile/` | Changes on top of archiso's `releng` profile: extra packages, live user, SDDM autologin, NetworkManager |
 | `profile/limine/limine.conf` | Boot menu (normal, safe graphics, copy to RAM) |

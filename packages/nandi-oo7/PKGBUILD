@@ -1,0 +1,53 @@
+# Maintainer: codegod100
+# oo7 Secret Service (https://github.com/linux-credentials/oo7) as the
+# desktop's org.freedesktop.secrets provider, in place of KWallet's ksecretd.
+
+pkgname=nandi-oo7
+_tag=0.6.0
+pkgver=$_tag
+pkgrel=1
+pkgdesc="oo7 Secret Service daemon, PAM module and portal, set up as the Plasma secret store"
+arch=(x86_64)
+url="https://github.com/linux-credentials/oo7"
+license=(MIT)
+depends=(dbus pam systemd-libs kwallet plasma-workspace xdg-desktop-portal)
+makedepends=(git meson rust gettext systemd)
+provides=(oo7-daemon oo7-portal org.freedesktop.secrets)
+conflicts=(oo7-daemon oo7-portal gnome-keyring)
+backup=(etc/xdg/kwalletrc etc/xdg-desktop-portal/kde-portals.conf)
+source=("oo7::git+https://github.com/linux-credentials/oo7.git#tag=$_tag"
+        kwalletrc kde-portals.conf)
+sha256sums=(SKIP SKIP SKIP)
+
+prepare() {
+  cd oo7
+  export CARGO_HOME="$srcdir/cargo-home"
+  cargo fetch --locked --target "$(rustc -vV | sed -n 's/^host: //p')"
+}
+
+build() {
+  export CARGO_HOME="$srcdir/cargo-home"
+  local part
+  # meson runs cargo from the build directory, so it has to sit inside the
+  # source tree for cargo to find the workspace.
+  for part in server pam portal; do
+    arch-meson oo7/$part oo7/$part/_build
+    meson compile -C oo7/$part/_build
+  done
+}
+
+package() {
+  local part
+  for part in server pam portal; do
+    meson install -C oo7/$part/_build --destdir "$pkgdir"
+  done
+
+  # Start with the session so the PAM module's unlock socket is up at login,
+  # not only once something asks for a secret over D-Bus.
+  install -d "$pkgdir/usr/lib/systemd/user/default.target.wants"
+  ln -s ../oo7-daemon.service "$pkgdir/usr/lib/systemd/user/default.target.wants/oo7-daemon.service"
+
+  install -Dm644 kwalletrc "$pkgdir/etc/xdg/kwalletrc"
+  install -Dm644 kde-portals.conf "$pkgdir/etc/xdg-desktop-portal/kde-portals.conf"
+  install -Dm644 oo7/LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}
