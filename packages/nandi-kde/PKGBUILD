@@ -66,12 +66,10 @@ package_nandi-loop-eyes() {
 
   local plasmoids="$pkgdir/usr/share/plasma/plasmoids"
   install -d "$plasmoids" "$pkgdir/usr/share/kwin/scripts"
-  cp -r --no-preserve=ownership kde/loop-eyes/plasmoid "$plasmoids/org.loop.eyes"
-  install -m755 build-loop-eyes/backend/libloopeyesbackend.so "$plasmoids/org.loop.eyes/contents/ui/backend/"
   cp -r --no-preserve=ownership kde/loop-eyes/panel "$plasmoids/org.loop.eyes.panel"
+  install -m755 build-loop-eyes/backend/libloopeyesbackend.so "$plasmoids/org.loop.eyes.panel/contents/ui/backend/"
   cp -r --no-preserve=ownership kde/loop-eyes/kwin "$pkgdir/usr/share/kwin/scripts/org.loop.eyes.cursor"
   install -Dm644 kde/loop-eyes/LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
-  install -Dm644 kde/loop-eyes/LICENSE-AVATAR "$pkgdir/usr/share/licenses/$pkgname/LICENSE-AVATAR"
 }
 
 package_nandi-whitelist-tray() {
